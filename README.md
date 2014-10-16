@@ -39,6 +39,9 @@ interpolating arbitrary vars.
 It was built with [AngularJS](http://angularjs.org/) in mind and inspired by [ngbp](http://github.com/ngbp/ngbp)
 but it can probably be used in many other scenarios.
 
+On top of that, an effort was made to streamline the process of generating multiple html files, to cater for apps that
+are segmented in independent modules and/or have specific needs for different environments or platforms.
+
 
 ### Templating
 
@@ -46,8 +49,7 @@ Create one `index.html` file (or more). Following [ng-boilerplate](http://github
 place to store your template(s) is `src/` but you may choose any directory as long as you configure the task
 accordingly.
 
-You can find a good starting point in `example/index.html` inside this plugin directory (it will typically be installed
-in `node_modules/grunt-ngindex`).
+You can find a good starting point in `example/index.html` inside this plugin directory.
 
 The template syntax is the underlying
 [Grunt Template Process](http://gruntjs.com/api/grunt.template#grunt.template.process), which uses
@@ -79,55 +81,13 @@ The template syntax is the underlying
 </html>
 ```
 
-### Configration
+### Configuration
 
-Inside your `Gruntfile.js` file add a section called `ngindex`. This section specifies the targets for the `ngindex`
-task and the options you want to pass to each target.
+Inside your `Gruntfile.js` file add a section called `ngindex`.
 
-Each target generates a single 'index.html' from a specfific template and links to a set of `js` and `css` files.
+This section defines the default options, and the different files you want to generate.
 
-Configure the plugin to collect `js` an `css` files and generate `build/index.html` from the template.
-
-```js
-grunt.initConfig({
-
-  ngindex: {
-
-    index: {
-      src: [
-        'src/**/*.js',
-        'src/*/*.*css'
-      ]
-    }
-  }
-}
-```
-
-If you need to generate more than one file you can add multiple targets to your `Gruntfile`. This is typically the
-case if your app is segmented and/or if you have different build targets for different environments or platforms.
-
-```js
-grunt.initConfig({
-
-  ngindex: {
-
-    index_dist: {
-      stripDir: 'dist',
-      target: 'dist/index_front.html',
-      src: [
-          'src/front/**/*.js',
-          'src/**/*.css'
-      ],
-      vars: {
-        'foo': 'bar'
-      }
-    },
-    index_build: { ... }
-  }
-}
-```
-
-Once you have more than one target you may want to use the `options` property property to set defaults and avoid repetion.
+Each target generates a single 'index.html' from a specific template, linking to a set of `js` and `css` files.
 
 ```js
 grunt.initConfig({
@@ -135,20 +95,34 @@ grunt.initConfig({
   ngindex: {
 
     options: {
-      template: 'src/template.html',
-      stripDir: 'build/',
       src: [
-        'vendor/**/*.js'
+          'build/src/vendor/**/*.js',
+          'build/src/lib/**/*.js'
       ],
+      dest: 'build/',
+      template: 'src/template.html',
+      stripDir: 'build',
       vars: {
-        foo: 'bar'
+        pkg: grunt.file.readJSON('package.json')
       }
     },
 
-    build: {
-      stripDir: [... more paths ...],
-      src: [... more files ... ],
-      vars: { ... more vars ... }
+    front: {
+      src: [
+          'src/front/**/*.js',
+          'src/**/*.css'
+      ],
+      options {
+        vars: {
+          'foo': 'bar'
+        }
+      }
+    },
+    admin: {
+      src: [
+        'src/admin/**/*.js',
+        'src/admin/**/*.*css'
+      ]
     }
   }
 }
@@ -156,14 +130,18 @@ grunt.initConfig({
 
 ### Disclaimer
 
-This being my first Grunt task, my feature wishlist was not framed within the Grunt configuration paradigm.
+This being my first Grunt task, my feature wishlist was not framed within the Grunt configuration paradigm. Meaning that
+I built this _thinking outside the box_, a.k.a., as a total grunt noob.
 
-You will see below that some of the target options _EXTEND_ the the task options instead of _OVERRIDING_ then. Once I
-figured this not how Grunt makes config available to a task executing a target, I checked a million Grunt plugins
-on npm and couldn't find any examples of a similar use case.
+- You will see below that some of the target options _EXTEND_ the the task options instead of _OVERRIDING_ them.
+- Also, you can set a default `dest` in the task options which does not seem to be a common practice.
 
-I still find it very useful to be able to define a set of common `src` files and `vars` for all your index files and
-then extend that with target specific values so I'm keeping this for now. Feel free to comment on this project GitHub
+Once I figured these are not standard approaches, this is not how Grunt makes config available to a task when it's
+executed in a target context, I still checked a million Grunt plugins for similar use cases and couldn't actually
+find anything.
+
+Yet, I find it very useful to be able to define a set of common `src` files and `vars` for all your index files and
+then extend that with target specific values so I'm keeping this for now. Feel free to comment on this project's
 [issues](http://github.com/andrezero/grunt-ngindex/issues).
 
 
@@ -175,30 +153,32 @@ The `dest` property must be a string. If it is an array, Grunt will fail when at
 ### Options
 
 _Note: the options declared per target will either _OVERRIDE_ (`template`, `dest` and `stripDir`) or _EXTEND_ (`src`
-and `vars`) the ones defined in the `options` property. See below for more details on each option behaviour.
+and `vars`) the ones defined in the `options` property. See below for more details on each option.
 
 
 #### options.template
+
 Type: `String`
-Default value: `'src/index.html'`
+
+Default: `'src/index.html'`
 
 The path to the template file, relative to the project directory.
 
-If set in the `options` property, any target that also defines it will override its value.
-
 
 #### options.dest
+
 Type: `String`
-Default value: `'build/index.html'`
+
+Default: `'build/index.html'`
 
 The path to the destination file, relative to the project directory.
 
-If set in the `options` property, any target that also defines it will override its value.
-
 
 #### options.src
+
 Type: `Array`
-Default value: `null`
+
+Default: `null`
 
 List of `css` and `js` files to link to. You can use the powerful
 [grunt files](http://gruntjs.com/configuring-tasks#files) here, including glob patterns and template substitution.
@@ -227,13 +207,14 @@ _NOTE: order matters and the base set of files will always preceed the target on
 _NOTE: duplicate files will always be removed._
 
 _NOTE: foreach entry in `src` that uses wildcards, only files that actually exist (relative to the project root) at the
-moment the task is executed  will actually make it into the template. If no wildcards are used the files are not checked
-so you may actually be including files that don't exist. To make sure, you can open the generated file in a browser and
-check for 404_
+moment the task is executed  will make it into the template. If no wildcards are used the files are not checked so you
+may be including files that don't exist. Open the generated file(s) in a browser and check for 404s._
 
 #### options.vars
+
 Type: `Object`
-Default value: `'{}'`
+
+Default: `'{}'`
 
 Any data you want to pass to the template. Ex:
 
@@ -262,12 +243,14 @@ defined per target.
 
 
 #### options.stripDir
+
 Type: `String|Array`
-Default value: `'build/'`
 
-Strips the given prefix from the start of the
+Default: `'build/'`
 
-If your list of file contains files inside the actual build folder, this will generate invalid links, since the app is
+Strips the given prefix from the beginning of the paths of any matched files.
+
+If your file list contains files inside the actual build folder, this will generate invalid links, since the app is
 served from within the acual `build/` directory. Ex:
 
 ```javascript
@@ -288,20 +271,24 @@ config = {
 };
 ```
 
-You can also specify more than one, ex: `['build/', 'dist/']`.
+You can also specify more than one path to strip. Ex: `['build/', 'dist/']`.
 
-If set in the `options` property, any target that also defines it will override its value.
 
-## Future Development
+---
 
-I plan to soon release an upgrade to enables embedding css, javascript or arbitrary content in the template. This
-will require another configuration option, a map that targets named regions in the template and defines the source of
-the content, this being a file or an ordered list of files.
 
-In this example, we embed:
-- the result of a `less` dist task that generates a stylesheet;
+## Roadmap
+
+### Embedding css, javascript or arbitrary content in the template.
+
+This will require another configuration option, a map that targets named regions in the template and defines the source
+of the content, this being a file or an ordered list of files.
+
+Here's an example use case, where we are embeding:
+- css contents generated by a `less` task;
 - the raw contents of another html file;
-- the result of yet another `ngindex` tasks that costumizes a Google Analytics script.
+- the result of a [grunt-template](http://github.com/mathiasbynens/grunt-template) task that generates a costumized
+Google Analytics script.
 
 ```javascript
 config = {
@@ -314,7 +301,7 @@ config = {
         embed: {
           style: '<%= less.embed_css.dest %>',
           footer: '<%= files.html.production_footer %>',
-          ga: '<%= ngindex.ga_template.dest %>'
+          ga: '<%= ga_template.dest %>'
         }
       }
     }
@@ -322,7 +309,7 @@ config = {
 };
 ```
 
-This can then be used in the templates like this:
+These vars would then be used in the templates like this:
 
 ```html
 <head>
@@ -343,13 +330,6 @@ This can then be used in the templates like this:
 
 </body>
 ```
-
----
-
-
-## Roadmap
-
-Integrate with a `serve` task.
 
 
 ## Credits and Acknowlegdments
