@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html data-ng-app="exampleApp" data-ng-controller="appCtrl">
+<head>
+    <title><%= pkg.name %></title>
+    <% if ('undefined' !== typeof cssFiles) { cssFiles.forEach( function ( file ) { %>
+    <link rel="stylesheet" type="text/css" href="/<%= file %>" /><% }); } %>
+
+</head>
+<body>
+    <header>
+        <h1><%= pkg.name %></h1>
+        <h2><%= foo %></h2>
+    </header>
+
+    <div class="view-container">
+        <section data-ng-view="main" id="content"></section>
+    </div>
+
+    <% if ('undefined' !== typeof jsFiles) { jsFiles.forEach( function ( file ) { %>
+    <script type="text/javascript" charset="utf-8" src="/<%= file %>"></script><% }); } %>
+
+</body>
+</html>
