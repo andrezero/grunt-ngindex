@@ -1,6 +1,6 @@
 {
   "name": "grunt-ngindex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generates index.html from template, linking js/css files and interpolating arbitrary vars.",
   "author": {
     "name": "Andre Torgal",
