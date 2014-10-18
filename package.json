@@ -14,12 +14,9 @@
   ],
   "keywords": [
     "grunt",
+    "gruntplugin",
     "angularjs",
-    "index",
-    "template",
-    "html",
-    "render",
-    "interpolating"
+    "template"
   ],
   "homepage": "https://github.com/andrezero/grunt-ngindex",
   "bugs": "https://github.com/andrezero/grunt-ngindex/issues",
@@ -29,7 +26,8 @@
   },
   "readmeFilename": "README.md",
   "files": [
-    "grunt-ngindex.js"
+    "LICENSE-MIT",
+    "tasks"
   ],
   "main": "Gruntfile.js",
   "scripts": {
