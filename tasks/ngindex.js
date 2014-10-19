@@ -1,7 +1,9 @@
 'use strict';
 
-module.exports = function (grunt) {
+var util = require('util');
+var _ = require('loadash');
 
+module.exports = function (grunt) {
 
     /**
      * specifically for normalizing this.filesSrc AND options.src, makes sure data is an array
@@ -42,12 +44,12 @@ module.exports = function (grunt) {
         var defaults = {
             template: 'src/index.html'
         };
-        var options = grunt.util._.merge(defaults, extendableOptions, targetOptions);
+        var options = _.merge(defaults, extendableOptions, targetOptions);
 
         // manually extend task options.src with target filesSrc
         // merge options.files with data.filesSrc to create a flatten and unique file list
         var files = grunt.file.expand(ensureArray(options.src));
-        files = grunt.util._(files).chain().concat(ensureArray(this.filesSrc)).flatten().uniq().value();
+        files = _(files).chain().concat(ensureArray(this.filesSrc)).flatten().uniq().value();
 
         // manually override dest
         options.dest = this.data.dest || options.dest;
@@ -81,7 +83,7 @@ module.exports = function (grunt) {
             jsFiles: jsFiles,
             cssFiles: cssFiles
         };
-        grunt.util._.merge(data, options.vars || {});
+        _.merge(data, options.vars || {});
 
         // copy the template to the target dir and process it
         grunt.file.copy(options.template, options.dest, {
