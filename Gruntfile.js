@@ -1,13 +1,22 @@
-    'use strict';
+'use strict';
 
-    module.exports = function(grunt) {
+module.exports = function (grunt) {
+
+    require('load-grunt-tasks')(grunt);
 
     var config = {
 
+        clean: {
+
+            tests: ['tmp'],
+        },
+
         jshint: {
+
             options: {
                 jshintrc: '.jshintrc',
             },
+
             all: [
                 'Gruntfile.js',
                 'tasks/*.js',
@@ -15,20 +24,42 @@
             ]
         },
 
-        // before generating any new files, remove any previously-created files.
-        clean: {
-            tests: ['tmp'],
+        jsbeautifier: {
+
+            options: {
+                config: '.jsbeautifyrc'
+            },
+
+            modify: {
+                src: [
+                    'Gruntfile.js',
+                    'tasks/*.js',
+                    '<%= nodeunit.tests %>',
+                ]
+            },
+
+            verify: {
+                src: [
+                    'Gruntfile.js',
+                    'tasks/*.js',
+                    '<%= nodeunit.tests %>',
+                ],
+                options: {
+                    mode: 'VERIFY_ONLY'
+                }
+            }
         },
 
-        // configurations to run and test.
         ngindex: {
+
             options: {
+
                 // these will be overriden
                 dest: 'tmp/foo.html',
                 stripDir: 'build/',
                 template: 'test/foo.html',
                 // these will be merged
-                src : [
+                src: [
                     'test/fixtures/*css',
                 ],
                 // these will be deep merged
@@ -38,7 +69,9 @@
                     }
                 }
             },
+
             test: {
+
                 src: [
                     'test/fixtures/*.js',
                 ],
@@ -56,8 +89,8 @@
             }
         },
 
-        // Unit tests.
         nodeunit: {
+
             tests: ['test/*_test.js'],
         }
     };
@@ -83,6 +116,7 @@
     grunt.registerTask('test', ['clean', 'ngindex:test', 'nodeunit']);
 
     // By default, lint and run all tests.
-    grunt.registerTask('default', ['jshint', 'test']);
+    grunt.registerTask('default', ['jshint', 'jsbeautifier', 'test']);
 
 };
+

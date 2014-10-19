@@ -38,9 +38,11 @@
   },
   "devDependencies": {
     "grunt": "~0.4.0",
-    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-jshint": "~0.7.2",
     "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-nodeunit": "~0.1.2"
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-jsbeautifier": "~0.2.4",
+    "load-grunt-tasks": "~0.6.0"
   },
   "engines": {
     "node": ">=0.10.0"

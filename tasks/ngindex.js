@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('util');
-var _ = require('loadash');
+var _ = require('lodash');
 
 module.exports = function (grunt) {
 
@@ -18,7 +18,7 @@ module.exports = function (grunt) {
     function ensureArray(data) {
         data = ('undefined' === typeof data) ? [] : data;
         data = ('string' === typeof data) ? [data] : data;
-        data = (data && 'object' === typeof data && 'function' === typeof data.join) ? data : []
+        data = (data && 'object' === typeof data && 'function' === typeof data.join) ? data : [];
         // weird case where target has no 'src' property and Grunt set `this.filesSrc` to [undefined]
         if (data.length === 1 && 'undefined' === typeof data[0]) {
             data = [];
@@ -37,7 +37,7 @@ module.exports = function (grunt) {
         var extendableOptions = {
             vars: baseOptions.vars || {},
             dest: baseOptions.dest
-        }
+        };
 
         // manually override with deep extend
         // defaults > task options > target options
@@ -100,3 +100,4 @@ module.exports = function (grunt) {
     });
 
 };
+
