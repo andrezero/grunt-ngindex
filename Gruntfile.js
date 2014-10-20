@@ -6,6 +6,19 @@ module.exports = function (grunt) {
 
     var config = {
 
+        pkg: require('./package.json'),
+
+        files: {
+
+            js_src: ['tasks/*.js'],
+            js_grunt: ['Gruntfile.js'],
+            js_all: [
+                'package.json',
+                '<%= files.js_src %>',
+                '<%= files.js_grunt %>'
+            ]
+        },
+
         clean: {
 
             tests: ['tmp'],
@@ -14,14 +27,10 @@ module.exports = function (grunt) {
         jshint: {
 
             options: {
-                jshintrc: '.jshintrc',
+                jshintrc: '.jshintrc'
             },
 
-            all: [
-                'Gruntfile.js',
-                'tasks/*.js',
-                '<%= nodeunit.tests %>',
-            ]
+            all: '<%= files.js_all %>'
         },
 
         jsbeautifier: {
@@ -31,19 +40,11 @@ module.exports = function (grunt) {
             },
 
             modify: {
-                src: [
-                    'Gruntfile.js',
-                    'tasks/*.js',
-                    '<%= nodeunit.tests %>',
-                ]
+                src: ['<%= files.js_src %>', '<%= files.js_grunt %>']
             },
 
             verify: {
-                src: [
-                    'Gruntfile.js',
-                    'tasks/*.js',
-                    '<%= nodeunit.tests %>',
-                ],
+                src: ['<%= files.js_src %>', '<%= files.js_grunt %>'],
                 options: {
                     mode: 'VERIFY_ONLY'
                 }
@@ -92,31 +93,72 @@ module.exports = function (grunt) {
         nodeunit: {
 
             tests: ['test/*_test.js'],
+        },
+
+        bump: {
+
+            options: {
+
+                files: [
+                    'package.json'
+                ],
+                updateConfigs: ['pkg'],
+                commit: true,
+                commitMessage: 'chore(release): v%VERSION%',
+                commitFiles: [
+                    'package.json',
+                    'CHANGELOG.md'
+                ],
+                createTag: true,
+                tagName: 'v%VERSION%',
+                tagMessage: 'Version %VERSION%',
+                push: true,
+                pushTo: 'origin'
+            }
+        },
+
+        changelog: {
+
+            options: {
+                dest: 'CHANGELOG.md',
+                template: 'changelog.tpl'
+            }
         }
     };
 
-    // inject `package.json` into config to test "pkg" interpolation in template
-    grunt.util._.merge(config, {
-        pkg: grunt.file.readJSON('./package.json')
-    });
-
-    // Project configuration.
     grunt.initConfig(config);
 
-    // load this plugin's task(s).
     grunt.loadTasks('tasks');
 
-    // these plugins provide necessary tasks.
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-nodeunit');
+    grunt.registerTask('test', [
+        'clean',
+        'ngindex:test',
+        'nodeunit'
+    ]);
 
-    // whenever the "test" task is run, first clean the "tmp" dir, then run this
-    // plugin's task(s), then test the result.
-    grunt.registerTask('test', ['clean', 'ngindex:test', 'nodeunit']);
+    grunt.registerTask('build', [
+        'jshint',
+        'jsbeautifier',
+        'test'
+    ]);
 
-    // By default, lint and run all tests.
-    grunt.registerTask('default', ['jshint', 'jsbeautifier', 'test']);
+    grunt.registerTask('pre-release', [
+        'git-is-clean',
+        'build',
+        'bump-only:prerelease',
+        'changelog',
+        'bump-commit'
+    ]);
+
+    grunt.registerTask('ci-build', ['build']);
+
+    grunt.registerTask('release', [
+        'git-is-clean',
+        'build',
+        'bump-only:patch',
+        'changelog',
+        'bump-commit'
+    ]);
 
 };
 

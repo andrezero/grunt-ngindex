@@ -1,4 +1,4 @@
-# grunt-ngindex
+# grunt-ngindex [![Build Status: Linux](https://travis-ci.org/andrezero/grunt-ngindex.png?branch=master)](https://travis-ci.org/andrezero/grunt-ngindex)
 
 > Compiles index.html files from templates.
 
