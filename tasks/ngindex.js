@@ -1,5 +1,6 @@
 'use strict';
 
+var path = require('path');
 var util = require('util');
 var _ = require('lodash');
 
@@ -29,7 +30,7 @@ module.exports = function (grunt) {
     grunt.registerMultiTask('ngindex', 'Generate index.html', function () {
 
         // task/target options
-        // not setting defaults here to allow extending `options.vars` instead of override
+        // not setting defaults here to allow extending `options.vars` instead of overriding it
         var targetOptions = this.options();
 
         // target vars deep extend task options
@@ -44,27 +45,27 @@ module.exports = function (grunt) {
         var defaults = {
             template: 'src/index.html'
         };
-        var options = _.merge(defaults, extendableOptions, targetOptions);
+        var opts = _.merge(defaults, extendableOptions, targetOptions);
 
         // manually extend task options.src with target filesSrc
         // merge options.files with data.filesSrc to create a flatten and unique file list
-        var files = grunt.file.expand(ensureArray(options.src));
+        var files = grunt.file.expand(ensureArray(opts.src));
         files = _(files).chain().concat(ensureArray(this.filesSrc)).flatten().uniq().value();
 
         // manually override dest
-        options.dest = this.data.dest || options.dest;
+        opts.dest = this.data.dest || opts.dest;
 
         // make sure that stripDir is an array
-        options.stripDir = ensureArray(options.stripDir);
+        opts.stripDir = ensureArray(opts.stripDir);
         // set default
-        if (!options.stripDir.length) {
-            options.stripDir = ['build/'];
+        if (!opts.stripDir.length) {
+            opts.stripDir = ['build/'];
         }
 
         // base paths to strip from all css/js files
         // typically "build/" and/or "dist/" are stripped because index files are served from these directories
-        if (options.stripDir) {
-            var stripDirectoriesRegExp = new RegExp('^(' + options.stripDir + ')', 'g');
+        if (opts.stripDir) {
+            var stripDirectoriesRegExp = new RegExp('^(' + opts.stripDir + ')', 'g');
             files = files.map(function (file) {
                 return file.replace(stripDirectoriesRegExp, '');
             });
@@ -79,14 +80,44 @@ module.exports = function (grunt) {
         });
 
         // data availabe in templates
-        var data = {
-            jsFiles: jsFiles,
-            cssFiles: cssFiles
-        };
-        _.merge(data, options.vars || {});
+        var data = {};
+
+        /**
+         * @param {object} data
+         */
+        function addHelpers(data) {
+
+            var basePath = path.dirname(opts.template);
+
+            /**
+             * @param {string} fileName
+             */
+            data.partial = function (fileName, overrideData) {
+                grunt.verbose.writeln('+ render partial', fileName);
+                var template = grunt.file.read(path.join(basePath, fileName));
+                var partialData = _.clone(data, true);
+                _.extend(partialData, overrideData);
+                var html = grunt.template.process(template, {
+                    data: partialData
+                });
+                return html;
+            };
+        }
+
+        // - data passed in options.vars
+        _.merge(data, opts.vars || {});
+        // - template helpers
+        addHelpers(data);
+        // - js and css files retrieved from target files
+        data.jsFiles = jsFiles;
+        data.cssFiles = cssFiles;
+
+        if (grunt.option('debug')) {
+            console.log(data);
+        }
 
         // copy the template to the target dir and process it
-        grunt.file.copy(options.template, options.dest, {
+        grunt.file.copy(opts.template, opts.dest, {
             process: function (contents, path) {
                 var html = grunt.template.process(contents, {
                     data: data
