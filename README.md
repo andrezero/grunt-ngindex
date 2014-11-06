@@ -1,6 +1,6 @@
-# grunt-ngindex [![Build Status: Linux](https://travis-ci.org/andrezero/grunt-ngindex.png?branch=master)](https://travis-ci.org/andrezero/grunt-ngindex)
+# grunt-ngindex [![npm version](http://img.shields.io/npm/v/grunt-ngindex.svg?style=flat-square)](https://npmjs.org/grunt-ngindex)
 
-> Compiles index.html files from templates.
+> Grunt task: compiles index.html files from templates.
 
 
 ## Getting Started
