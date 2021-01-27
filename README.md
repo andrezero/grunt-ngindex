@@ -5,6 +5,9 @@
 
 > Grunt task: compiles index.html files from templates.
 
+## WARNING: This code is not maintained
+
+Very obvious - but due - WARNING. Time flies, the world revolves, grunt became gulp became webpack, yada yada. Good memories!
 
 ## Getting Started
 
